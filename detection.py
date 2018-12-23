@@ -9,7 +9,7 @@ import argparse
 import imutils
 import time
 import cv2
-
+import math
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--prototxt", required=True,
@@ -22,6 +22,34 @@ args = vars(ap.parse_args())
 tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
 tracker_type = tracker_types[5]
 (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+font = cv2.FONT_HERSHEY_SIMPLEX
+
+# initialize the known distance from the camera to the object, which
+# in this case is 24 inches
+KNOWN_DISTANCE = 24.0
+
+# initialize the known object width, which in this case, the piece of
+# paper is 12 inches wide
+KNOWN_WIDTH = 11.0
+
+def find_marker(image):
+	# convert the image to grayscale, blur it, and detect edges
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	gray = cv2.GaussianBlur(gray, (5, 5), 0)
+	edged = cv2.Canny(gray, 35, 125)
+
+	# find the contours in the edged image and keep the largest one;
+	# we'll assume that this is our piece of paper in the image
+	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+	cnts = imutils.grab_contours(cnts)
+	c = max(cnts, key = cv2.contourArea)
+
+	# compute the bounding box of the of the paper region and return it
+	return cv2.minAreaRect(c)
+
+def distance_to_camera(knownWidth, focalLength, perWidth):
+	# compute and return the distance from the maker to the camera
+	return (knownWidth * focalLength) / perWidth
 if int(minor_ver) < 3:
 	tracker = cv2.Tracker_create(tracker_type)
 else:
@@ -62,13 +90,17 @@ xV=None
 co = True
 Interrup=False
 xV=None
+distance=0
+newY=0
+newX=0
 # loop over the frames from the video stream
 while True:
 	# grab the frame from the threaded video stream and resize it
 	# to have a maximum width of 400 pixels
 	frame = vs.read()
 	frame = imutils.resize(frame, width=400)
-
+	marker = find_marker(frame)
+	focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 	# grab the frame dimensions and convert it to a blob
 	(h, w) = frame.shape[:2]
 	blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
@@ -110,19 +142,24 @@ while True:
 					(0, 255, 0), 2)
 					newX=x
 					newY=y
+					distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
+					distance = math.floor(distancei/2) * 2.54
 			print(CLASSES[idx])
 			if Interrup and CLASSES[idx] =='person' :
 				print('detected person')
 				xV = tuple(box)
 				print(xV)
-
+				marker = find_marker(frame)
+				inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
+				print(inches)
 				tracker.init(frame, xV)
 			# else:
 				# xV = tuple(box)
 				# print(xV)
 				# cv2.rectangle(frame,(startX, startY),(endX, endY),COLORS[idx], 2)
 				# y = startY - 15 if startY - 15 > 15 else startY + 15
-				# cv2.putText(frame, label, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
+				# cv2.putText(frame, distance, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
+				cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
 
 	# show the output frame
 	# print(frame)
