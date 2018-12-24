@@ -60,7 +60,7 @@ KNOWN_DISTANCE = 24.0
 KNOWN_WIDTH = 11.0
 imagePaths = list(paths.list_images(args["dataset"]))
 
-def reconizeFace():
+def reconizeFace(frame):
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -115,7 +115,7 @@ def reconizeFace():
 		y = top - 15 if top - 15 > 15 else top + 15
 		cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
 			0.75, (0, 255, 0), 2)
-
+		return name
 	# display the image to our screen
 	# cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
@@ -123,6 +123,7 @@ def reconizeFace():
 	# if the `q` key was pressed, break from the loop
 	# update the FPS counter
 	fps.update()
+	# return name
 
 # stop the timer and display FPS information
 fps.stop()
@@ -284,6 +285,7 @@ newY=0
 newX=0
 storeStatus=False
 t = threading.Thread(target=createModel,name='name')
+newThredStatus=False
 # loop over the frames from the video stream
 while True:
 	# grab the frame from the threaded video stream and resize it
@@ -336,13 +338,25 @@ while True:
 					distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 					distance = math.floor(distancei/2) * 2.54
 			print(CLASSES[idx])
+			print("thread status:--> " +str(t.isAlive()))
+			if t.isAlive() == False and newThredStatus:
+				print('data reloaded...**********************************')
+				newThredStatus=False
+				data = pickle.loads(open(args["encodings"], "rb").read())
+				t._stop()
+				t = threading.Thread(target=createModel,name='name')
 			if Interrup and CLASSES[idx] =='person' :
 				print('detected person')
-				if(storeStatus):
+				nameU = reconizeFace(frame)
+				if nameU =='Unknown' and storeStatus:
+					print(nameU)
+				# if(storeStatus):
 					storeStatus=False
+					cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
 					storeFaceDataset(10,frame)
-					t.daemon = True
+					# t.daemon = True
 					t.start()
+					newThredStatus=True
 				else:
 					storeStatus=False
 					xV = tuple(box)
