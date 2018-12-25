@@ -224,15 +224,23 @@ def find_marker(image):
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	gray = cv2.GaussianBlur(gray, (5, 5), 0)
 	edged = cv2.Canny(gray, 35, 125)
-
+	T1 = tuple()
 	# find the contours in the edged image and keep the largest one;
 	# we'll assume that this is our piece of paper in the image
 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 	cnts = imutils.grab_contours(cnts)
-	c = max(cnts, key = cv2.contourArea)
+	c = max(cnts, key = cv2.contourArea) if cnts else T1
 
+	try:
+		print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+		print(cv2.minAreaRect(c))
+		return cv2.minAreaRect(c)
+	except:
+		return cv2.minAreaRect(T1)
+
+	# print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 	# compute the bounding box of the of the paper region and return it
-	return cv2.minAreaRect(c)
+	# return cv2.minAreaRect(c)
 
 def distance_to_camera(knownWidth, focalLength, perWidth):
 	# compute and return the distance from the maker to the camera
@@ -287,108 +295,113 @@ storeStatus=False
 t = threading.Thread(target=createModel,name='name')
 newThredStatus=False
 # loop over the frames from the video stream
-while True:
-	# grab the frame from the threaded video stream and resize it
-	# to have a maximum width of 400 pixels
-	frame = vs.read()
-	frame = imutils.resize(frame, width=400)
-	marker = find_marker(frame)
-	focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
-	# grab the frame dimensions and convert it to a blob
-	(h, w) = frame.shape[:2]
-	blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
-		0.007843, (300, 300), 127.5)
+try:
+	while True:
+		# grab the frame from the threaded video stream and resize it
+		# to have a maximum width of 400 pixels
+		frame = vs.read()
+		frame = imutils.resize(frame, width=400)
+		if Interrup:
+			marker = find_marker(frame)
+			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
+		# grab the frame dimensions and convert it to a blob
+		(h, w) = frame.shape[:2]
+		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
+			0.007843, (300, 300), 127.5)
 
-	# pass the blob through the network and obtain the detections and
-	# predictions
-	net.setInput(blob)
-	detections = net.forward()
+		# pass the blob through the network and obtain the detections and
+		# predictions
+		net.setInput(blob)
+		detections = net.forward()
 
-	# loop over the detections
-	for i in np.arange(0, detections.shape[2]):
-		# extract the confidence (i.e., probability) associated with
-		# the prediction
-		confidence = detections[0, 0, i, 2]
+		# loop over the detections
+		for i in np.arange(0, detections.shape[2]):
+			# extract the confidence (i.e., probability) associated with
+			# the prediction
+			confidence = detections[0, 0, i, 2]
 
-		# filter out weak detections by ensuring the `confidence` is
-		# greater than the minimum confidence
-		if confidence > args["confidence"]:
-			# extract the index of the class label from the
-			# `detections`, then compute the (x, y)-coordinates of
-			# the bounding box for the object
-			idx = int(detections[0, 0, i, 1])
-			box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-			(startX, startY, endX, endY) = box.astype("int")
+			# filter out weak detections by ensuring the `confidence` is
+			# greater than the minimum confidence
+			if confidence > args["confidence"]:
+				# extract the index of the class label from the
+				# `detections`, then compute the (x, y)-coordinates of
+				# the bounding box for the object
+				idx = int(detections[0, 0, i, 1])
+				box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+				(startX, startY, endX, endY) = box.astype("int")
 
-			# draw the prediction on the frame
-			label = "{}: {:.2f}%".format(CLASSES[idx],
-				confidence * 100)
-			# print(CLASSES[idx])
-			# (success, box) = tracker.update(frame)
-			if xV is not None and Interrup:
-				(success, box) = tracker.update(frame)
-				print(success)
-				if success:
-					# Interrup=False
-					(x, y, w, h) = [int(v) for v in box]
-					cv2.rectangle(frame, (x, y), (x + w, y + h),
-					(0, 255, 0), 2)
-					newX=x
-					newY=y
-					distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
-					distance = math.floor(distancei/2) * 2.54
-			print(CLASSES[idx])
-			print("thread status:--> " +str(t.isAlive()))
-			if t.isAlive() == False and newThredStatus:
-				print('data reloaded...**********************************')
-				newThredStatus=False
-				data = pickle.loads(open(args["encodings"], "rb").read())
-				t._stop()
-				t = threading.Thread(target=createModel,name='name')
-			if Interrup and CLASSES[idx] =='person' :
-				print('detected person')
-				nameU = reconizeFace(frame)
-				if nameU =='Unknown' and storeStatus:
-					print(nameU)
-				# if(storeStatus):
-					storeStatus=False
-					cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
-					storeFaceDataset(10,frame)
-					# t.daemon = True
-					t.start()
-					newThredStatus=True
-				else:
-					storeStatus=False
-					xV = tuple(box)
-					print(xV)
-					marker = find_marker(frame)
-					inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
-					print(inches)
-					tracker.init(frame, xV)
-			# else:
-				# xV = tuple(box)
-				# print(xV)
-				# cv2.rectangle(frame,(startX, startY),(endX, endY),COLORS[idx], 2)
-				# y = startY - 15 if startY - 15 > 15 else startY + 15
-				# cv2.putText(frame, distance, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
-				cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
+				# draw the prediction on the frame
+				label = "{}: {:.2f}%".format(CLASSES[idx],
+					confidence * 100)
+				# print(CLASSES[idx])
+				# (success, box) = tracker.update(frame)
+				if xV is not None and Interrup:
+					(success, box) = tracker.update(frame)
+					print(success)
+					if success:
+						# Interrup=False
+						(x, y, w, h) = [int(v) for v in box]
+						cv2.rectangle(frame, (x, y), (x + w, y + h),
+						(0, 255, 0), 2)
+						newX=x
+						newY=y
+						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
+						distance = math.floor(distancei/2) * 2.54
+				print(CLASSES[idx])
+				print("thread status:--> " +str(t.isAlive()))
+				if t.isAlive() == False and newThredStatus:
+					print('data reloaded...**********************************')
+					newThredStatus=False
+					data = pickle.loads(open(args["encodings"], "rb").read())
+					t._stop()
+					t = threading.Thread(target=createModel,name='name')
+				if Interrup and CLASSES[idx] =='person' :
+					print('detected person')
+					nameU = reconizeFace(frame)
+					if nameU =='Unknown' and storeStatus:
+						print(nameU)
+					# if(storeStatus):
+						storeStatus=False
+						cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
+						storeFaceDataset(10,frame)
+						# t.daemon = True
+						t.start()
+						newThredStatus=True
+					else:
+						storeStatus=False
+						xV = tuple(box)
+						print(xV)
+						# marker = find_marker(frame)
+						# inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
+						# print(inches)
+						tracker.init(frame, xV)
+				# else:
+					# xV = tuple(box)
+					# print(xV)
+					# cv2.rectangle(frame,(startX, startY),(endX, endY),COLORS[idx], 2)
+					# y = startY - 15 if startY - 15 > 15 else startY + 15
+					# cv2.putText(frame, distance, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
+					cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
 
-	# show the output frame
-	# print(frame)
-	if len(frame) != 0:
-		cv2.imshow("Frame", frame)
-		key = cv2.waitKey(1) & 0xFF
+		# show the output frame
+		# print(frame)
+		if len(frame) != 0:
+			cv2.imshow("Frame", frame)
+			key = cv2.waitKey(1) & 0xFF
 
-		# if the `q` key was pressed, break from the loop
-		if key == ord("q"):
-			break
-		if key == ord("s"):
-			Interrup=True
-		if key == ord("t"):
-			storeStatus=True
+			# if the `q` key was pressed, break from the loop
+			if key == ord("q"):
+				break
+			if key == ord("s"):
+				Interrup=True
+			if key == ord("t"):
+				storeStatus=True
 
-		# update the FPS counter
-		fps.update()
+			# update the FPS counter
+			fps.update()
+
+except NameError:
+  print(NameError)
 
 # stop the timer and display FPS information
 fps.stop()
