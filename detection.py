@@ -2,9 +2,10 @@
 # python real_time_object_detection.py --prototxt MobileNetSSD_deploy.prototxt.txt --model MobileNetSSD_deploy.caffemodel
 
 # import the necessary packages
-from imutils.video import VideoStream
+# from imutils.video import VideoStream
 from imutils.video import FPS
-from imutils.video import VideoStream
+# from imutils.video import VideoStream
+from imutils.video import FileVideoStream
 from imutils.video import FPS
 import numpy as np
 import argparse
@@ -280,7 +281,7 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 # initialize the video stream, allow the cammera sensor to warmup,
 # and initialize the FPS counter
 print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
+vs = FileVideoStream(src=0).start()
 time.sleep(2.0)
 fps = FPS().start()
 
