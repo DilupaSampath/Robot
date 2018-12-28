@@ -40,7 +40,7 @@ args = vars(ap.parse_args())
 face_detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 data = pickle.loads(open(args["encodings"], "rb").read())
 detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-fps = FPS().start()
+# fps = FPS().start()
 
 tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
 tracker_type = tracker_types[5]
@@ -123,13 +123,13 @@ def reconizeFace(frame):
 
 	# if the `q` key was pressed, break from the loop
 	# update the FPS counter
-	fps.update()
+	# fps.update()
 	# return name
 
 # stop the timer and display FPS information
-fps.stop()
-print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+# fps.stop()
+# print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+# print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
 def createModel():
 
@@ -281,9 +281,10 @@ net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 # initialize the video stream, allow the cammera sensor to warmup,
 # and initialize the FPS counter
 print("[INFO] starting video stream...")
-vs = FileVideoStream(src=0).start()
+# vs = FileVideoStream(0).start()
+vs= cv2.VideoCapture(0);
 time.sleep(2.0)
-fps = FPS().start()
+# fps = FPS().start()
 
 xV=None
 co = True
@@ -300,14 +301,14 @@ try:
 	while True:
 		# grab the frame from the threaded video stream and resize it
 		# to have a maximum width of 400 pixels
-		frame = vs.read()
-		frame = imutils.resize(frame, width=400)
+		_,frame = vs.read()
+		frame = imutils.resize(frame, width=100)
 		if Interrup:
 			marker = find_marker(frame)
 			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 		# grab the frame dimensions and convert it to a blob
 		(h, w) = frame.shape[:2]
-		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
+		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (100, 100)),
 			0.007843, (300, 300), 127.5)
 
 		# pass the blob through the network and obtain the detections and
@@ -399,15 +400,15 @@ try:
 				storeStatus=True
 
 			# update the FPS counter
-			fps.update()
+			# fps.update()
 
 except NameError:
   print(NameError)
 
 # stop the timer and display FPS information
-fps.stop()
-print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
-print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+# fps.stop()
+# # print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
+# # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
 # do a bit of cleanup
 cv2.destroyAllWindows()
