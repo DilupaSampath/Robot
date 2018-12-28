@@ -61,9 +61,9 @@ KNOWN_DISTANCE = 24.0
 KNOWN_WIDTH = 11.0
 imagePaths = list(paths.list_images(args["dataset"]))
 
-def reconizeFace(frame):
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+def reconizeFace(frame,gray,rgb):
+	# gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	# rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 	# detect faces in the grayscale frame
 	rects = detector.detectMultiScale(gray, scaleFactor=1.3,
@@ -131,7 +131,7 @@ def reconizeFace(frame):
 # print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
 # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
-def createModel():
+def createModel(rgb):
 
 	print("[INFO] quantifying faces...")
 	imagePaths = list(paths.list_images(args["dataset"]))
@@ -150,7 +150,7 @@ def createModel():
 		# load the input image and convert it from RGB (OpenCV ordering)
 		# to dlib ordering (RGB)
 		image = cv2.imread(imagePath)
-		rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+		# rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 		# detect the (x, y)-coordinates of the bounding boxes
 		# corresponding to each face in the input image
@@ -174,16 +174,16 @@ def createModel():
 	f.write(pickle.dumps(data))
 	f.close()
 def runMethordInThred():
-	t = threading.Thread(target=createModel,name='name')
+	t = threading.Thread(target=createModel,args = (rgb),name='name')
 	t.daemon = True
 	t.start()
-def storeFaceDataset(frameCountUser,image_frame):
+def storeFaceDataset(frameCountUser,image_frame,gray):
 	# Looping starts here
 	count=0
 	frameCount=frameCountUser
 	while(True):
 		frameCount=frameCount-1
-		gray = cv2.cvtColor(image_frame, cv2.COLOR_BGR2GRAY)
+		# gray = cv2.cvtColor(image_frame, cv2.COLOR_BGR2GRAY)
 
 	    # Detecting different faces
 		faces = face_detector.detectMultiScale(gray, 1.3, 5)
@@ -220,9 +220,9 @@ def assure_path_exists(path):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
-def find_marker(image):
+def find_marker(image,gray):
 	# convert the image to grayscale, blur it, and detect edges
-	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	gray = cv2.GaussianBlur(gray, (5, 5), 0)
 	edged = cv2.Canny(gray, 35, 125)
 	T1 = tuple()
@@ -303,8 +303,11 @@ try:
 		# to have a maximum width of 400 pixels
 		_,frame = vs.read()
 		frame = imutils.resize(frame, width=100)
+		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
 		if Interrup:
-			marker = find_marker(frame)
+			marker = find_marker(frame,gray)
 			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 		# grab the frame dimensions and convert it to a blob
 		(h, w) = frame.shape[:2]
@@ -359,13 +362,14 @@ try:
 					t = threading.Thread(target=createModel,name='name')
 				if Interrup and CLASSES[idx] =='person' :
 					print('detected person')
-					nameU = reconizeFace(frame)
+
+					nameU = reconizeFace(frame,gray,rgb)
 					if nameU =='Unknown' and storeStatus:
 						print(nameU)
 					# if(storeStatus):
 						storeStatus=False
 						cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
-						storeFaceDataset(10,frame)
+						storeFaceDataset(10,frame,gray)
 						# t.daemon = True
 						t.start()
 						newThredStatus=True
