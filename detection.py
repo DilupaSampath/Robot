@@ -42,9 +42,10 @@ data = pickle.loads(open(args["encodings"], "rb").read())
 detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 # fps = FPS().start()
 
-tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
-tracker_type = tracker_types[5]
-(major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+# tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
+# tracker_type = tracker_types[5]
+tracker_type='CSRT'
+# (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # Set unique id for each individual person
@@ -59,7 +60,7 @@ KNOWN_DISTANCE = 24.0
 # initialize the known object width, which in this case, the piece of
 # paper is 12 inches wide
 KNOWN_WIDTH = 11.0
-imagePaths = list(paths.list_images(args["dataset"]))
+imagePaths = list(paths.list_images("dataset"))
 
 def reconizeFace(frame,gray,rgb):
 	# gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -109,10 +110,10 @@ def reconizeFace(frame,gray,rgb):
 		names.append(name)
 
 	# loop over the recognized faces
-	for ((top, right, bottom, left), name) in zip(boxes, names):
+	for ((top,right,bottom,left),name) in zip(boxes, names):
 		# draw the predicted face name on the image
-		cv2.rectangle(frame, (left, top), (right, bottom),
-			(0, 255, 0), 2)
+		# cv2.rectangle(frame, (left, top), (right, bottom),
+		# 	(0, 255, 0), 2)
 		y = top - 15 if top - 15 > 15 else top + 15
 		cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
 			0.75, (0, 255, 0), 2)
@@ -120,17 +121,6 @@ def reconizeFace(frame,gray,rgb):
 	# display the image to our screen
 	# cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
-
-	# if the `q` key was pressed, break from the loop
-	# update the FPS counter
-	# fps.update()
-	# return name
-
-# stop the timer and display FPS information
-# fps.stop()
-# print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-# print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-
 def createModel(rgb):
 
 	print("[INFO] quantifying faces...")
@@ -170,7 +160,7 @@ def createModel(rgb):
 	# dump the facial encodings + names to disk
 	print("[INFO] serializing encodings...")
 	data = {"encodings": knownEncodings, "names": knownNames}
-	f = open(args["encodings"], "wb")
+	f = open(args["encodings.pickle"], "wb")
 	f.write(pickle.dumps(data))
 	f.close()
 def runMethordInThred():
@@ -214,11 +204,11 @@ def storeFaceDataset(frameCountUser,image_frame,gray):
 		elif count>10:
 			break
 
-
-def assure_path_exists(path):
-    dir = os.path.dirname(path)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+#
+# def assure_path_exists(path):
+#     dir = os.path.dirname(path)
+#     if not os.path.exists(dir):
+#         os.makedirs(dir)
 
 def find_marker(image,gray):
 	# convert the image to grayscale, blur it, and detect edges
@@ -234,7 +224,7 @@ def find_marker(image,gray):
 
 	try:
 		print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-		print(cv2.minAreaRect(c))
+		# print(cv2.minAreaRect(c))
 		return cv2.minAreaRect(c)
 	except:
 		return cv2.minAreaRect(T1)
@@ -246,25 +236,7 @@ def find_marker(image,gray):
 def distance_to_camera(knownWidth, focalLength, perWidth):
 	# compute and return the distance from the maker to the camera
 	return (knownWidth * focalLength) / perWidth
-if int(minor_ver) < 3:
-	tracker = cv2.Tracker_create(tracker_type)
-else:
-	if tracker_type == 'BOOSTING':
-		tracker = cv2.TrackerBoosting_create()
-	if tracker_type == 'MIL':
-		tracker = cv2.TrackerMIL_create()
-	if tracker_type == 'KCF':
-		tracker = cv2.TrackerKCF_create()
-	if tracker_type == 'TLD':
-		tracker = cv2.TrackerTLD_create()
-	if tracker_type == 'MEDIANFLOW':
-		tracker = cv2.TrackerMedianFlow_create()
-	if tracker_type == 'CSRT':
-		tracker = cv2.TrackerCSRT_create()
-	if tracker_type == 'MOSSE':
-		tracker = cv2.TrackerMOSSE_create()
-# initialize the list of class labels MobileNet SSD was trained to
-# detect, then generate a set of bounding box colors for each class
+tracker = cv2.TrackerCSRT_create()
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
@@ -272,7 +244,7 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
 #checking existence of path
-assure_path_exists("dataset/")
+# assure_path_exists("dataset/")
 
 # load our serialized model from disk
 print("[INFO] loading model...")
@@ -302,7 +274,8 @@ try:
 		# grab the frame from the threaded video stream and resize it
 		# to have a maximum width of 400 pixels
 		_,frame = vs.read()
-		frame = imutils.resize(frame, width=300)
+		# frame = imutils.resize(frame, width=300)
+		frame = cv2.resize(frame,(360,480))
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -311,7 +284,7 @@ try:
 			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 		# grab the frame dimensions and convert it to a blob
 		(h, w) = frame.shape[:2]
-		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
+		blob = cv2.dnn.blobFromImage(frame,
 			0.007843, (300, 300), 127.5)
 
 		# pass the blob through the network and obtain the detections and
@@ -387,7 +360,7 @@ try:
 					# cv2.rectangle(frame,(startX, startY),(endX, endY),COLORS[idx], 2)
 					# y = startY - 15 if startY - 15 > 15 else startY + 15
 					# cv2.putText(frame, distance, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
-					
+
 					cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
 
 		# show the output frame
