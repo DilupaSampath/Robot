@@ -3,7 +3,7 @@
 
 # import the necessary packages
 # from imutils.video import VideoStream
-# from imutils.video import FPS
+from imutils.video import FPS
 # from imutils.video import VideoStream
 # from imutils.video import FileVideoStream
 # from imutils.video import FPS
@@ -221,32 +221,32 @@ def storeFaceDataset(frameCountUser,image_frame,gray):
 #     if not os.path.exists(dir):
 #         os.makedirs(dir)
 
-def find_marker(image,gray):
-	# convert the image to grayscale, blur it, and detect edges
-	# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	gray = cv2.GaussianBlur(gray, (5, 5), 0)
-	edged = cv2.Canny(gray, 35, 125)
-	T1 = tuple()
-	# find the contours in the edged image and keep the largest one;
-	# we'll assume that this is our piece of paper in the image
-	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
-	c = max(cnts, key = cv2.contourArea) if cnts else T1
+# def find_marker(image,gray):
+# 	# convert the image to grayscale, blur it, and detect edges
+# 	# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# 	gray = cv2.GaussianBlur(gray, (5, 5), 0)
+# 	edged = cv2.Canny(gray, 35, 125)
+# 	T1 = tuple()
+# 	# find the contours in the edged image and keep the largest one;
+# 	# we'll assume that this is our piece of paper in the image
+# 	cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+# 	cnts = imutils.grab_contours(cnts)
+# 	c = max(cnts, key = cv2.contourArea) if cnts else T1
+#
+# 	try:
+# 		print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+# 		print(cv2.minAreaRect(c))
+# 		return cv2.minAreaRect(c)
+# 	except:
+# 		return cv2.minAreaRect(T1)
+#
+# 	# print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+# 	# compute the bounding box of the of the paper region and return it
+# 	# return cv2.minAreaRect(c)
 
-	try:
-		# print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-		print(cv2.minAreaRect(c))
-		# return cv2.minAreaRect(c)
-	except:
-		return cv2.minAreaRect(T1)
-
-	# print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-	# compute the bounding box of the of the paper region and return it
-	# return cv2.minAreaRect(c)
-
-def distance_to_camera(knownWidth, focalLength, perWidth):
-	# compute and return the distance from the maker to the camera
-	return (knownWidth * focalLength) / perWidth
+# def distance_to_camera(knownWidth, focalLength, perWidth):
+# 	# compute and return the distance from the maker to the camera
+# 	return (knownWidth * focalLength) / perWidth
 if int(minor_ver) < 3:
 	tracker = cv2.Tracker_create(tracker_type)
 else:
@@ -272,11 +272,12 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
-# #checking existence of path
+
+#checking existence of path
 # assure_path_exists("dataset/")
 
-# # load our serialized model from disk
-# print("[INFO] loading model...")
+# load our serialized model from disk
+print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
 # initialize the video stream, allow the cammera sensor to warmup,
@@ -304,13 +305,13 @@ try:
 		# to have a maximum width of 400 pixels
 		_,frame = vs.read()
 		# frame = imutils.resize(frame, width=300)
-		frame = cv2.resize(frame,(300,300))
+		frame =	cv2.resize(frame,(360,480))
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-		if Interrup:
-			marker = find_marker(frame,gray)
-			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
+		# if Interrup:
+		# 	marker = find_marker(frame,gray)
+		# 	focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 		# grab the frame dimensions and convert it to a blob
 		(h, w) = frame.shape[:2]
 		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
@@ -344,20 +345,20 @@ try:
 				# (success, box) = tracker.update(frame)
 				if xV is not None and Interrup:
 					(success, box) = tracker.update(frame)
-					# print(success)
+					print(success)
 					if success:
 						# Interrup=False
 						(x, y, w, h) = [int(v) for v in box]
-						cv2.rectangle(frame, (x, y), (x + w, y + h),
-						(0, 255, 0), 2)
+						# cv2.rectangle(frame, (x, y), (x + w, y + h),
+						# (0, 255, 0), 2)
 						newX=x
 						newY=y
 						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 						distance = math.floor(distancei/2) * 2.54
 				# print(CLASSES[idx])
-				# print("thread status:--> " +str(t.isAlive()))
+				print("thread status:--> " +str(t.isAlive()))
 				if t.isAlive() == False and newThredStatus:
-					print('data reloaded...**********************************')
+					# print('data reloaded...**********************************')
 					newThredStatus=False
 					# dataOriginal = pickle.loads(open(args["encodings"], "rb").read())
 					t._stop()
@@ -371,14 +372,15 @@ try:
 					# if(storeStatus):
 						storeStatus=False
 						# cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
-						storeFaceDataset(10,frame,gray)
+						# storeFaceDataset(10,frame,gray)
+						print('Please wait I\'m storing you')
 						# t.daemon = True
 						t.start()
 						newThredStatus=True
 					else:
 						storeStatus=False
 						xV = tuple(box)
-						# print(xV)
+						print(xV)
 						# marker = find_marker(frame)
 						# inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
 						# print(inches)
