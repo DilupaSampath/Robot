@@ -6,7 +6,7 @@
 from imutils.video import FPS
 # from imutils.video import VideoStream
 from imutils.video import FileVideoStream
-from imutils.video import FPS
+# from imutils.video import FPS
 import numpy as np
 import argparse
 import imutils
@@ -336,7 +336,8 @@ try:
 				if Interrup and CLASSES[idx] =='person' :
 					print('detected person')
 
-					nameU = reconizeFace(frame,gray,rgb)
+					# nameU = reconizeFace(frame,gray,rgb)
+					nameU ='Unknown1'
 					if nameU =='Unknown' and storeStatus:
 						print(nameU)
 					# if(storeStatus):
