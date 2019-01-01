@@ -3,10 +3,10 @@
 
 # import the necessary packages
 # from imutils.video import VideoStream
-from imutils.video import FPS
+# from imutils.video import FPS
 # from imutils.video import VideoStream
-from imutils.video import FileVideoStream
-from imutils.video import FPS
+# from imutils.video import FileVideoStream
+# from imutils.video import FPS
 import numpy as np
 import argparse
 import imutils
@@ -42,8 +42,9 @@ data = pickle.loads(open(args["encodings"], "rb").read())
 detector = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 # fps = FPS().start()
 
-tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
-tracker_type = tracker_types[5]
+# tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE']
+# tracker_type = tracker_types[5]
+tracker_type = 'CSRT'
 (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -215,10 +216,10 @@ def storeFaceDataset(frameCountUser,image_frame,gray):
 			break
 
 
-def assure_path_exists(path):
-    dir = os.path.dirname(path)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+# def assure_path_exists(path):
+#     dir = os.path.dirname(path)
+#     if not os.path.exists(dir):
+#         os.makedirs(dir)
 
 def find_marker(image,gray):
 	# convert the image to grayscale, blur it, and detect edges
@@ -233,9 +234,9 @@ def find_marker(image,gray):
 	c = max(cnts, key = cv2.contourArea) if cnts else T1
 
 	try:
-		print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+		# print('c $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 		print(cv2.minAreaRect(c))
-		return cv2.minAreaRect(c)
+		# return cv2.minAreaRect(c)
 	except:
 		return cv2.minAreaRect(T1)
 
@@ -249,20 +250,21 @@ def distance_to_camera(knownWidth, focalLength, perWidth):
 if int(minor_ver) < 3:
 	tracker = cv2.Tracker_create(tracker_type)
 else:
-	if tracker_type == 'BOOSTING':
-		tracker = cv2.TrackerBoosting_create()
-	if tracker_type == 'MIL':
-		tracker = cv2.TrackerMIL_create()
-	if tracker_type == 'KCF':
-		tracker = cv2.TrackerKCF_create()
-	if tracker_type == 'TLD':
-		tracker = cv2.TrackerTLD_create()
-	if tracker_type == 'MEDIANFLOW':
-		tracker = cv2.TrackerMedianFlow_create()
-	if tracker_type == 'CSRT':
-		tracker = cv2.TrackerCSRT_create()
-	if tracker_type == 'MOSSE':
-		tracker = cv2.TrackerMOSSE_create()
+	tracker = cv2.TrackerCSRT_create()
+	# if tracker_type == 'BOOSTING':
+	# 	tracker = cv2.TrackerBoosting_create()
+	# if tracker_type == 'MIL':
+	# 	tracker = cv2.TrackerMIL_create()
+	# if tracker_type == 'KCF':
+	# 	tracker = cv2.TrackerKCF_create()
+	# if tracker_type == 'TLD':
+	# 	tracker = cv2.TrackerTLD_create()
+	# if tracker_type == 'MEDIANFLOW':
+	# 	tracker = cv2.TrackerMedianFlow_create()
+	# if tracker_type == 'CSRT':
+	# 	tracker = cv2.TrackerCSRT_create()
+	# if tracker_type == 'MOSSE':
+	# 	tracker = cv2.TrackerMOSSE_create()
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
@@ -270,12 +272,11 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"]
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
+# #checking existence of path
+# assure_path_exists("dataset/")
 
-#checking existence of path
-assure_path_exists("dataset/")
-
-# load our serialized model from disk
-print("[INFO] loading model...")
+# # load our serialized model from disk
+# print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
 # initialize the video stream, allow the cammera sensor to warmup,
@@ -302,7 +303,8 @@ try:
 		# grab the frame from the threaded video stream and resize it
 		# to have a maximum width of 400 pixels
 		_,frame = vs.read()
-		frame = imutils.resize(frame, width=300)
+		# frame = imutils.resize(frame, width=300)
+		frame = cv2.resize(frame,(300,300))
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -342,7 +344,7 @@ try:
 				# (success, box) = tracker.update(frame)
 				if xV is not None and Interrup:
 					(success, box) = tracker.update(frame)
-					print(success)
+					# print(success)
 					if success:
 						# Interrup=False
 						(x, y, w, h) = [int(v) for v in box]
@@ -352,8 +354,8 @@ try:
 						newY=y
 						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 						distance = math.floor(distancei/2) * 2.54
-				print(CLASSES[idx])
-				print("thread status:--> " +str(t.isAlive()))
+				# print(CLASSES[idx])
+				# print("thread status:--> " +str(t.isAlive()))
 				if t.isAlive() == False and newThredStatus:
 					print('data reloaded...**********************************')
 					newThredStatus=False
@@ -368,7 +370,7 @@ try:
 						print(nameU)
 					# if(storeStatus):
 						storeStatus=False
-						cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
+						# cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
 						storeFaceDataset(10,frame,gray)
 						# t.daemon = True
 						t.start()
@@ -376,7 +378,7 @@ try:
 					else:
 						storeStatus=False
 						xV = tuple(box)
-						print(xV)
+						# print(xV)
 						# marker = find_marker(frame)
 						# inches = distance_to_camera(KNOWN_WIDTH, focalLength, marker[1][0])
 						# print(inches)
