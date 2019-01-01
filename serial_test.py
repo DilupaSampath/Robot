@@ -115,7 +115,7 @@ try:
 						print(nameU)
 					# if(storeStatus):
 						storeStatus=False
-						cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
+						# cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
 						# storeFaceDataset(10,frame,gray)
 						# t.daemon = True
 						# t.start()
@@ -130,7 +130,7 @@ try:
 						tracker.init(frame, xV)
 
 		if len(frame) != 0:
-			cv2.imshow("Frame", frame)
+			# cv2.imshow("Frame", frame)
 			key = cv2.waitKey(1) & 0xFF
 
 			# if the `q` key was pressed, break from the loop
