@@ -61,160 +61,160 @@ KNOWN_DISTANCE = 24.0
 # paper is 12 inches wide
 KNOWN_WIDTH = 11.0
 imagePaths = list(paths.list_images(args["dataset"]))
+#
+# def reconizeFace(frame,gray,rgb):
+# 	# gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+# 	# rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#
+# 	# detect faces in the grayscale frame
+# 	rects = detector.detectMultiScale(gray, scaleFactor=1.3,
+# 	minNeighbors=5, minSize=(30, 30),
+# 	flags=cv2.CASCADE_SCALE_IMAGE)
+#
+# 	# OpenCV returns bounding box coordinates in (x, y, w, h) order
+# 	# but we need them in (top, right, bottom, left) order, so we
+# 	# need to do a bit of reordering
+# 	boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
+#
+# 	# compute the facial embeddings for each face bounding box
+# 	encodings = face_recognition.face_encodings(rgb, boxes)
+# 	names = []
+#
+# 	# loop over the facial embeddings
+# 	for encoding in encodings:
+# 		# attempt to match each face in the input image to our known
+# 		# encodings
+# 		matches = face_recognition.compare_faces(data["encodings"],encoding)
+# 		name = "Unknown"
+#
+# 		# check to see if we have found a match
+# 		if True in matches:
+# 			# find the indexes of all matched faces then initialize a
+# 			# dictionary to count the total number of times each face
+# 			# was matched
+# 			matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+# 			counts = {}
+#
+# 			# loop over the matched indexes and maintain a count for
+# 			# each recognized face face
+# 			for i in matchedIdxs:
+# 				name = data["names"][i]
+# 				counts[name] = counts.get(name, 0) + 1
+#
+# 			# determine the recognized face with the largest number
+# 			# of votes (note: in the event of an unlikely tie Python
+# 			# will select first entry in the dictionary)
+# 			name = max(counts, key=counts.get)
+#
+# 		# update the list of names
+# 		names.append(name)
+#
+# 	# loop over the recognized faces
+# 	# for ((top, right, bottom, left), name) in zip(boxes, names):
+# 	# 	# draw the predicted face name on the image
+# 	# 	# cv2.rectangle(frame, (left, top), (right, bottom),
+# 	# 	# 	(0, 255, 0), 2)
+# 	# 	y = top - 15 if top - 15 > 15 else top + 15
+# 	# 	cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
+# 	# 		0.75, (0, 255, 0), 2)
+# 		return name
+# 	# display the image to our screen
+# 	# cv2.imshow("Frame", frame)
+# 	# key = cv2.waitKey(1) & 0xFF
+#
+# 	# if the `q` key was pressed, break from the loop
+# 	# update the FPS counter
+# 	# fps.update()
+# 	# return name
+#
+# # stop the timer and display FPS information
+# # fps.stop()
+# # print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+# # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
-def reconizeFace(frame,gray,rgb):
-	# gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	# rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-	# detect faces in the grayscale frame
-	rects = detector.detectMultiScale(gray, scaleFactor=1.3,
-	minNeighbors=5, minSize=(30, 30),
-	flags=cv2.CASCADE_SCALE_IMAGE)
-
-	# OpenCV returns bounding box coordinates in (x, y, w, h) order
-	# but we need them in (top, right, bottom, left) order, so we
-	# need to do a bit of reordering
-	boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
-
-	# compute the facial embeddings for each face bounding box
-	encodings = face_recognition.face_encodings(rgb, boxes)
-	names = []
-
-	# loop over the facial embeddings
-	for encoding in encodings:
-		# attempt to match each face in the input image to our known
-		# encodings
-		matches = face_recognition.compare_faces(data["encodings"],encoding)
-		name = "Unknown"
-
-		# check to see if we have found a match
-		if True in matches:
-			# find the indexes of all matched faces then initialize a
-			# dictionary to count the total number of times each face
-			# was matched
-			matchedIdxs = [i for (i, b) in enumerate(matches) if b]
-			counts = {}
-
-			# loop over the matched indexes and maintain a count for
-			# each recognized face face
-			for i in matchedIdxs:
-				name = data["names"][i]
-				counts[name] = counts.get(name, 0) + 1
-
-			# determine the recognized face with the largest number
-			# of votes (note: in the event of an unlikely tie Python
-			# will select first entry in the dictionary)
-			name = max(counts, key=counts.get)
-
-		# update the list of names
-		names.append(name)
-
-	# loop over the recognized faces
-	# for ((top, right, bottom, left), name) in zip(boxes, names):
-	# 	# draw the predicted face name on the image
-	# 	# cv2.rectangle(frame, (left, top), (right, bottom),
-	# 	# 	(0, 255, 0), 2)
-	# 	y = top - 15 if top - 15 > 15 else top + 15
-	# 	cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-	# 		0.75, (0, 255, 0), 2)
-		return name
-	# display the image to our screen
-	# cv2.imshow("Frame", frame)
-	# key = cv2.waitKey(1) & 0xFF
-
-	# if the `q` key was pressed, break from the loop
-	# update the FPS counter
-	# fps.update()
-	# return name
-
-# stop the timer and display FPS information
-# fps.stop()
-# print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-# print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-
-def createModel(rgb):
-
-	print("[INFO] quantifying faces...")
-	imagePaths = list(paths.list_images(args["dataset"]))
-
-	# initialize the list of known encodings and known names
-	knownEncodings = []
-	knownNames = []
-
-	# loop over the image paths
-	for (i, imagePath) in enumerate(imagePaths):
-		# extract the person name from the image path
-		print("[INFO] processing image {}/{}".format(i + 1,
-			len(imagePaths)))
-		name = imagePath.split(os.path.sep)[-2]
-
-		# load the input image and convert it from RGB (OpenCV ordering)
-		# to dlib ordering (RGB)
-		image = cv2.imread(imagePath)
-		# rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-		# detect the (x, y)-coordinates of the bounding boxes
-		# corresponding to each face in the input image
-		boxes = face_recognition.face_locations(rgb,
-			model=args["detection_method"])
-
-		# compute the facial embedding for the face
-		encodings = face_recognition.face_encodings(rgb, boxes)
-
-		# loop over the encodings
-		for encoding in encodings:
-			# add each encoding + name to our set of known names and
-			# encodings
-			knownEncodings.append(encoding)
-			knownNames.append(name)
-
-	# dump the facial encodings + names to disk
-	print("[INFO] serializing encodings...")
-	data = {"encodings": knownEncodings, "names": knownNames}
-	f = open(args["encodings"], "wb")
-	f.write(pickle.dumps(data))
-	f.close()
-def runMethordInThred():
-	t = threading.Thread(target=createModel,args = (rgb),name='name')
-	t.daemon = True
-	t.start()
-def storeFaceDataset(frameCountUser,image_frame,gray):
-	# Looping starts here
-	count=0
-	frameCount=frameCountUser
-	while(True):
-		frameCount=frameCount-1
-		# gray = cv2.cvtColor(image_frame, cv2.COLOR_BGR2GRAY)
-
-	    # Detecting different faces
-		faces = face_detector.detectMultiScale(gray, 1.3, 5)
-
-	    # Looping through all the detected faces in the frame
-		for (x,y,w,h) in faces:
-
-	        # Crop the image frame into rectangle
-			cv2.rectangle(image_frame, (x,y), (x+w,y+h), (255,0,0), 2)
-
-	        # Increasing the no. of images by 1 since frame we captured
-			count += 1
-
-	        # Saving the captured image into the training_data folder
-			if not os.path.exists("dataset/"+str(frameCountUser)):
-				os.makedirs("dataset/"+str(frameCountUser))
-			cv2.imwrite("dataset/"+str(frameCountUser)+"/Person." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
-
-	        # Displaying the frame with rectangular bounded box
-			# cv2.imshow('frame', image_frame)
-
-	    # press 'q' for at least 100ms to stop this capturing process
-		if cv2.waitKey(100) & 0xFF == ord('q'):
-			break
-
-	    #We are taking 100 images for each person for the training data
-	    # If image taken reach 100, stop taking video
-		elif count>10:
-			break
-
+# def createModel(rgb):
+#
+# 	print("[INFO] quantifying faces...")
+# 	imagePaths = list(paths.list_images(args["dataset"]))
+#
+# 	# initialize the list of known encodings and known names
+# 	knownEncodings = []
+# 	knownNames = []
+#
+# 	# loop over the image paths
+# 	for (i, imagePath) in enumerate(imagePaths):
+# 		# extract the person name from the image path
+# 		print("[INFO] processing image {}/{}".format(i + 1,
+# 			len(imagePaths)))
+# 		name = imagePath.split(os.path.sep)[-2]
+#
+# 		# load the input image and convert it from RGB (OpenCV ordering)
+# 		# to dlib ordering (RGB)
+# 		image = cv2.imread(imagePath)
+# 		# rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#
+# 		# detect the (x, y)-coordinates of the bounding boxes
+# 		# corresponding to each face in the input image
+# 		boxes = face_recognition.face_locations(rgb,
+# 			model=args["detection_method"])
+#
+# 		# compute the facial embedding for the face
+# 		encodings = face_recognition.face_encodings(rgb, boxes)
+#
+# 		# loop over the encodings
+# 		for encoding in encodings:
+# 			# add each encoding + name to our set of known names and
+# 			# encodings
+# 			knownEncodings.append(encoding)
+# 			knownNames.append(name)
+#
+# 	# dump the facial encodings + names to disk
+# 	print("[INFO] serializing encodings...")
+# 	data = {"encodings": knownEncodings, "names": knownNames}
+# 	f = open(args["encodings"], "wb")
+# 	f.write(pickle.dumps(data))
+# 	f.close()
+# def runMethordInThred():
+# 	t = threading.Thread(target=createModel,args = (rgb),name='name')
+# 	t.daemon = True
+# 	t.start()
+# def storeFaceDataset(frameCountUser,image_frame,gray):
+# 	# Looping starts here
+# 	count=0
+# 	frameCount=frameCountUser
+# 	while(True):
+# 		frameCount=frameCount-1
+# 		# gray = cv2.cvtColor(image_frame, cv2.COLOR_BGR2GRAY)
+#
+# 	    # Detecting different faces
+# 		faces = face_detector.detectMultiScale(gray, 1.3, 5)
+#
+# 	    # Looping through all the detected faces in the frame
+# 		for (x,y,w,h) in faces:
+#
+# 	        # Crop the image frame into rectangle
+# 			cv2.rectangle(image_frame, (x,y), (x+w,y+h), (255,0,0), 2)
+#
+# 	        # Increasing the no. of images by 1 since frame we captured
+# 			count += 1
+#
+# 	        # Saving the captured image into the training_data folder
+# 			if not os.path.exists("dataset/"+str(frameCountUser)):
+# 				os.makedirs("dataset/"+str(frameCountUser))
+# 			cv2.imwrite("dataset/"+str(frameCountUser)+"/Person." + str(face_id) + '.' + str(count) + ".jpg", gray[y:y+h,x:x+w])
+#
+# 	        # Displaying the frame with rectangular bounded box
+# 			# cv2.imshow('frame', image_frame)
+#
+# 	    # press 'q' for at least 100ms to stop this capturing process
+# 		if cv2.waitKey(100) & 0xFF == ord('q'):
+# 			break
+#
+# 	    #We are taking 100 images for each person for the training data
+# 	    # If image taken reach 100, stop taking video
+# 		elif count>10:
+# 			break
+#
 
 # def assure_path_exists(path):
 #     dir = os.path.dirname(path)
@@ -296,7 +296,7 @@ distance=0
 newY=0
 newX=0
 storeStatus=False
-t = threading.Thread(target=createModel,name='name')
+# t = threading.Thread(target=createModel,name='name')
 newThredStatus=False
 # loop over the frames from the video stream
 try:
@@ -356,13 +356,13 @@ try:
 						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 						distance = math.floor(distancei/2) * 2.54
 				print(CLASSES[idx])
-				print("thread status:--> " +str(t.isAlive()))
-				if t.isAlive() == False and newThredStatus:
-					print('data reloaded...**********************************')
-					newThredStatus=False
+				# print("thread status:--> " +str(t.isAlive()))
+				# if t.isAlive() == False and newThredStatus:
+				# 	print('data reloaded...**********************************')
+				# 	newThredStatus=False
 					# dataOriginal = pickle.loads(open(args["encodings"], "rb").read())
-					t._stop()
-					t = threading.Thread(target=createModel,name='name')
+					# t._stop()
+					# t = threading.Thread(target=createModel,name='name')
 				if Interrup and CLASSES[idx] =='person' :
 					print('detected person')
 
@@ -375,7 +375,7 @@ try:
 						# cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
 						# storeFaceDataset(10,frame,gray)
 						# t.daemon = True
-						t.start()
+						# t.start()
 						newThredStatus=True
 					else:
 						storeStatus=False
