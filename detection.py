@@ -355,10 +355,10 @@ try:
 						newY=y
 						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 						distance = math.floor(distancei/2) * 2.54
-				# print(CLASSES[idx])
+				print(CLASSES[idx])
 				print("thread status:--> " +str(t.isAlive()))
 				if t.isAlive() == False and newThredStatus:
-					# print('data reloaded...**********************************')
+					print('data reloaded...**********************************')
 					newThredStatus=False
 					# dataOriginal = pickle.loads(open(args["encodings"], "rb").read())
 					t._stop()
@@ -366,14 +366,14 @@ try:
 				if Interrup and CLASSES[idx] =='person' :
 					print('detected person')
 
-					nameU = reconizeFace(frame,gray,rgb)
+					# nameU = reconizeFace(frame,gray,rgb)
+					nameU='Unknown'
 					if nameU =='Unknown' and storeStatus:
 						print(nameU)
 					# if(storeStatus):
 						storeStatus=False
 						# cv2.putText(frame,'Please wait I\'m storing you' , (5,400),font,1,(255,255,255),2)
 						# storeFaceDataset(10,frame,gray)
-						print('Please wait I\'m storing you')
 						# t.daemon = True
 						t.start()
 						newThredStatus=True
