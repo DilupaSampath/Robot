@@ -77,7 +77,7 @@ def reconizeFace(frame,gray,rgb):
 	boxes = [(y, x + w, y + h, x) for (x, y, w, h) in rects]
 
 	# compute the facial embeddings for each face bounding box
-	encodings = face_recognition.face_encodings(rgb, boxes)
+	encodings = face_recognition.face_encodings(gray, boxes)
 	names = []
 
 	# loop over the facial embeddings
@@ -144,11 +144,11 @@ def createModel(rgb):
 
 		# detect the (x, y)-coordinates of the bounding boxes
 		# corresponding to each face in the input image
-		boxes = face_recognition.face_locations(rgb,
+		boxes = face_recognition.face_locations(gray,
 			model=args["detection_method"])
 
 		# compute the facial embedding for the face
-		encodings = face_recognition.face_encodings(rgb, boxes)
+		encodings = face_recognition.face_encodings(gray, boxes)
 
 		# loop over the encodings
 		for encoding in encodings:
@@ -164,7 +164,7 @@ def createModel(rgb):
 	f.write(pickle.dumps(data))
 	f.close()
 def runMethordInThred():
-	t = threading.Thread(target=createModel,args = (rgb),name='name')
+	t = threading.Thread(target=createModel,args = (gray),name='name')
 	t.daemon = True
 	t.start()
 def storeFaceDataset(frameCountUser,image_frame,gray):
@@ -277,7 +277,7 @@ try:
 		# frame = imutils.resize(frame, width=300)
 		frame = cv2.resize(frame,(360,480))
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+		# rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 		if Interrup:
 			marker = find_marker(frame,gray)
