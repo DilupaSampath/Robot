@@ -7,6 +7,7 @@ from imutils.video import FPS
 # from imutils.video import VideoStream
 from imutils.video import FileVideoStream
 from imutils.video import FPS
+import serial
 import numpy as np
 import argparse
 import imutils
@@ -109,17 +110,17 @@ def reconizeFace(frame,gray,rgb):
 		names.append(name)
 
 	# loop over the recognized faces
-	for ((top, right, bottom, left), name) in zip(boxes, names):
-		# draw the predicted face name on the image
-		cv2.rectangle(frame, (left, top), (right, bottom),
-			(0, 255, 0), 2)
-		y = top - 15 if top - 15 > 15 else top + 15
-		cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-			0.75, (0, 255, 0), 2)
+	# for ((top, right, bottom, left), name) in zip(boxes, names):
+	# 	# draw the predicted face name on the image
+	# 	# cv2.rectangle(frame, (left, top), (right, bottom),
+	# 	# 	(0, 255, 0), 2)
+	# 	y = top - 15 if top - 15 > 15 else top + 15
+	# 	cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
+	# 		0.75, (0, 255, 0), 2)
 		return name
 	# display the image to our screen
 	# cv2.imshow("Frame", frame)
-	key = cv2.waitKey(1) & 0xFF
+	# key = cv2.waitKey(1) & 0xFF
 
 	# if the `q` key was pressed, break from the loop
 	# update the FPS counter
@@ -302,7 +303,7 @@ try:
 		# grab the frame from the threaded video stream and resize it
 		# to have a maximum width of 400 pixels
 		_,frame = vs.read()
-		frame = imutils.resize(frame, width=100)
+		frame = imutils.resize(frame, width=300)
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -311,7 +312,7 @@ try:
 			focalLength = (marker[1][0] * KNOWN_DISTANCE) / KNOWN_WIDTH
 		# grab the frame dimensions and convert it to a blob
 		(h, w) = frame.shape[:2]
-		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (100, 100)),
+		blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)),
 			0.007843, (300, 300), 127.5)
 
 		# pass the blob through the network and obtain the detections and
@@ -357,7 +358,7 @@ try:
 				if t.isAlive() == False and newThredStatus:
 					print('data reloaded...**********************************')
 					newThredStatus=False
-					data = pickle.loads(open(args["encodings"], "rb").read())
+					# dataOriginal = pickle.loads(open(args["encodings"], "rb").read())
 					t._stop()
 					t = threading.Thread(target=createModel,name='name')
 				if Interrup and CLASSES[idx] =='person' :
@@ -387,7 +388,8 @@ try:
 					# cv2.rectangle(frame,(startX, startY),(endX, endY),COLORS[idx], 2)
 					# y = startY - 15 if startY - 15 > 15 else startY + 15
 					# cv2.putText(frame, distance, (startX, y),cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[idx], 2)
-					cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
+					# distance comment
+					# cv2.putText(frame,'Distance = ' + str(newY), (5,100),font,1,(255,255,255),2)
 
 		# show the output frame
 		# print(frame)
