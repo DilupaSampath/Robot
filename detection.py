@@ -7,7 +7,6 @@ from imutils.video import FPS
 # from imutils.video import VideoStream
 from imutils.video import FileVideoStream
 from imutils.video import FPS
-import serial
 import numpy as np
 import argparse
 import imutils
