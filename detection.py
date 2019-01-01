@@ -267,10 +267,7 @@ else:
 	# 	tracker = cv2.TrackerMOSSE_create()
 # initialize the list of class labels MobileNet SSD was trained to
 # detect, then generate a set of bounding box colors for each class
-CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
-	"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
-	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
-	"sofa", "train", "tvmonitor"]
+CLASSES = ["person"]
 COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
 #checking existence of path
@@ -339,8 +336,8 @@ try:
 				(startX, startY, endX, endY) = box.astype("int")
 
 				# draw the prediction on the frame
-				label = "{}: {:.2f}%".format(CLASSES[idx],
-					confidence * 100)
+				# label = "{}: {:.2f}%".format(CLASSES[idx],
+				# 	confidence * 100)
 				# print(CLASSES[idx])
 				# (success, box) = tracker.update(frame)
 				if xV is not None and Interrup:
@@ -355,7 +352,7 @@ try:
 						newY=y
 						distancei = (2*3.14 * 180)/(w+h*360)*1000 + 3
 						distance = math.floor(distancei/2) * 2.54
-				print(CLASSES[idx])
+				# print(CLASSES[idx])
 				# print("thread status:--> " +str(t.isAlive()))
 				# if t.isAlive() == False and newThredStatus:
 				# 	print('data reloaded...**********************************')
@@ -363,7 +360,7 @@ try:
 					# dataOriginal = pickle.loads(open(args["encodings"], "rb").read())
 					# t._stop()
 					# t = threading.Thread(target=createModel,name='name')
-				if Interrup and CLASSES[idx] =='person' :
+				if Interrup and CLASSES[0] =='person' :
 					print('detected person')
 
 					# nameU = reconizeFace(frame,gray,rgb)
